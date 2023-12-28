@@ -19,6 +19,7 @@ struct UiTableRepresentableView: UIViewRepresentable {
         let uiTableView = UITableView()
         uiTableView.dataSource = context.coordinator
         uiTableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        
         return uiTableView
     }
     
@@ -27,7 +28,7 @@ struct UiTableRepresentableView: UIViewRepresentable {
     }
     
     class Coordinator: NSObject, UITableViewDataSource {
-        var newsViewModel: NewsViewModel
+        @ObservedObject var newsViewModel: NewsViewModel
         
         init(newsViewModel: NewsViewModel) {
             self.newsViewModel = newsViewModel
@@ -44,29 +45,35 @@ struct UiTableRepresentableView: UIViewRepresentable {
             let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
             
             cell.contentConfiguration = UIHostingConfiguration {
-                VStack(spacing: 10) {
-                    Text(currentNews.title ?? "")
-                    
-                    Spacer()
-                    
-                    if let imageUrl = currentNews.urlToImage {
+                NavigationLink  {
+                    DetailsView(newsModel: currentNews)
+                } label: {
+                    VStack(spacing: 10) {
+                        Text(currentNews.title ?? "")
                         
-                        AsyncImage (url: URL(string: imageUrl)) { phase in
-                            if let image = phase.image {
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .accessibilityAddTraits(.isImage)
-                                    .accessibilityHint("Today's news")
-                                    .accessibilityLabel(currentNews.title ?? "")
-                            } else if phase.error != nil {
-                                Image(systemName: "photo.tv")
-                            } else {
-                                ProgressView()
+                        Spacer()
+                        
+                        if let imageUrl = currentNews.urlToImage {
+                            
+                            AsyncImage (url: URL(string: imageUrl)) { phase in
+                                if let image = phase.image {
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .accessibilityAddTraits(.isImage)
+                                        .accessibilityHint("Today's news")
+                                        .accessibilityLabel(currentNews.title ?? "")
+                                } else if phase.error != nil {
+                                    Image(systemName: "photo.tv")
+                                } else {
+                                    ProgressView()
+                                }
                             }
                         }
                     }
                 }
+
+             
                 
             }
             
